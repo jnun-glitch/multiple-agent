@@ -1,6 +1,11 @@
 fastapi>=0.115
 uvicorn[standard]>=0.34
-openai>=1.100
 python-dotenv>=1.1
 python-multipart>=0.0.20
 pytest>=8.3
+httpx>=0.28
+torch>=2.6
+transformers>=4.48
+accelerate>=1.2
+soundfile>=0.12
+numpy>=1.26
