@@ -21,13 +21,14 @@ class WSMgr:
     def __init__(self): self.clients=set()
     async def add(self,w): await w.accept(); self.clients.add(w)
     def remove(self,w): self.clients.discard(w)
-    async def send(self,e):
+    async def send(self,event):
         for w in list(self.clients):
-            try: await w.send_json(e)
+            try: await w.send_json(event)
             except Exception: self.remove(w)
 
 ws=WSMgr()
 bus.subscribe(ws.send)
+
 app=FastAPI(title="Multi-Agent Voice Lab")
 front=Path(__file__).resolve().parent.parent/"frontend"
 app.mount("/static",StaticFiles(directory=front),name="static")
@@ -42,7 +43,7 @@ async def agents():
 
 @app.get("/api/health")
 async def health():
-    return {"ok":True,"turn_locked":turns.locked(),"speaker":turns.current_speaker}
+    return {"ok":True,"backend":"local-huggingface","turn_locked":turns.locked(),"speaker":turns.current_speaker}
 
 @app.post("/api/transcribe")
 async def transcribe(file:UploadFile=File(...)):
@@ -64,7 +65,7 @@ async def speak(payload:SpeakRequest):
         await bus.publish({"type":"speaking_started","agent":agent.id,"name":agent.name})
         try:
             audio=await voice.speech(payload.text,agent.voice)
-            return Response(audio,media_type="audio/mpeg")
+            return Response(audio,media_type="audio/wav")
         finally:
             await bus.publish({"type":"speaking_finished","agent":agent.id,"name":agent.name})
 

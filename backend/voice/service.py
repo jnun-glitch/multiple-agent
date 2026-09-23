@@ -1,16 +1,23 @@
+import os
 import tempfile
 from pathlib import Path
-from openai import AsyncOpenAI
-from config.settings import TRANSCRIBE_MODEL,TTS_MODEL
+from backend.providers.local_hf import LocalHFProvider
+
 class VoiceService:
- def __init__(self): self.client=AsyncOpenAI()
- async def transcribe(self,data,filename="recording.webm"):
-  suffix=Path(filename).suffix or ".webm"
-  with tempfile.NamedTemporaryFile(suffix=suffix,delete=False) as f: f.write(data); path=f.name
-  try:
-   with open(path,"rb") as audio: r=await self.client.audio.transcriptions.create(model=TRANSCRIBE_MODEL,file=audio)
-   return r.text.strip()
-  finally: Path(path).unlink(missing_ok=True)
- async def speech(self,text,voice):
-  r=await self.client.audio.speech.create(model=TTS_MODEL,voice=voice,input=text,format="mp3")
-  return r.content
+    """Local Hugging Face STT/TTS service. No paid voice API required."""
+
+    def __init__(self):
+        self.provider=LocalHFProvider()
+
+    async def transcribe(self,data:bytes,filename="recording.webm"):
+        suffix=Path(filename).suffix or ".webm"
+        with tempfile.NamedTemporaryFile(suffix=suffix,delete=False) as f:
+            f.write(data)
+            path=f.name
+        try:
+            return await self.provider.transcribe(path)
+        finally:
+            Path(path).unlink(missing_ok=True)
+
+    async def speech(self,text:str,voice_profile:str="calm"):
+        return await self.provider.speech(text,voice_profile)
