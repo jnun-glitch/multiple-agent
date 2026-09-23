@@ -208,3 +208,15 @@ tests/           Tests
 
 ## 📄 Lizenz
 MIT
+
+## 🤗 Local Hugging Face Mode
+
+Dieses Projekt verwendet standardmäßig lokale Hugging-Face-Modelle für LLM, Speech-to-Text und deutsche Text-to-Speech-Ausgabe.
+
+- LLM: Qwen/Qwen2.5-1.5B-Instruct
+- STT: openai/whisper-tiny
+- TTS: facebook/mms-tts-deu
+
+Für normale lokale Nutzung ist damit kein OpenAI-API-Key erforderlich.
+
+Mehr Details: docs/HUGGINGFACE.md
